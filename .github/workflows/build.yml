@@ -41,7 +41,15 @@ jobs:
 
       - name: Сборка debug APK
         working-directory: ${{ steps.loc.outputs.dir }}
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: |
+          set +e
+          gradle assembleDebug --no-daemon --console=plain > build.log 2>&1
+          code=$?
+          echo "=== ОШИБКИ КОМПИЛЯЦИИ ==="
+          grep -E "^e: " build.log || echo "(строк e: нет)"
+          echo "=== КОНЕЦ ЛОГА ==="
+          tail -n 25 build.log
+          exit $code
 
       - name: Выложить APK в Releases
         uses: softprops/action-gh-release@v2
